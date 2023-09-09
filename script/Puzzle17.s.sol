@@ -7,8 +7,6 @@ import { console, StdUtils } from "forge-std/Test.sol";
 import "../src/Curta.sol";
 import "../src/puzzles/Puzzle17.sol";
 
-address constant yorke = 0x7714F5E0C26F10584180515FC704C06d4c17d4F0;
-
 contract Puzzle17 is Script {
     using {into} for IKey;
 
@@ -44,14 +42,31 @@ contract Puzzle17 is Script {
     // ripemd160(prefix + p_shadow)[0:4] = 0x00000000
     // The result 20-byte hash right aligned to 32 bytes
 
+    address constant player = 0x7714F5E0C26F10584180515FC704C06d4c17d4F0;
+    uint32 constant puzzleId = 17;
+
+    // forge inspect Curta storage --pretty
+    bytes32 constant solveMappingSlot = bytes32(uint256(11));
+    bytes32 constant playerMappingSlot = keccak256(abi.encode(player, solveMappingSlot));
+    bytes32 constant puzzleMappingSlot = keccak256(abi.encode(puzzleId, playerMappingSlot));
+
     function run() public {
-        // vm.label(address(puzzle), "MurderMystery");
-        uint256 start = puzzle.generate(yorke);
+        vm.label(address(puzzle), "MurderMystery");
+        vm.label(address(curta), "Curta");
 
         uint256 solution = puzzle.solution();
 
-        // vm.startPrank(yorke);
-        vm.startBroadcast();
+        bool solved = curta.hasSolvedPuzzle(player, puzzleId);
+
+        if (solved) {
+            // pretend the player has not solved the puzzle
+            vm.store(address(curta), puzzleMappingSlot, bytes32(uint256(0)));
+            solved = curta.hasSolvedPuzzle(player, puzzleId);
+        }
+
+        assert(!solved);
+
+        vm.startPrank(player);
 
         puzzle.solve(
             sand,
@@ -67,9 +82,8 @@ contract Puzzle17 is Script {
             victim
         );
 
-        curta.solve(17, solution);
+        curta.solve(puzzleId, solution);
 
-        vm.stopBroadcast();
-
+        vm.stopPrank();
     }
 }
