@@ -45,7 +45,7 @@ contract Puzzle17 is Script {
     address constant player = 0x7714F5E0C26F10584180515FC704C06d4c17d4F0;
     uint32 constant puzzleId = 17;
 
-    // forge inspect Curta storage --pretty
+    // $ forge inspect Curta storage --pretty
     bytes32 constant solveMappingSlot = bytes32(uint256(11));
     bytes32 constant playerMappingSlot = keccak256(abi.encode(player, solveMappingSlot));
     bytes32 constant puzzleMappingSlot = keccak256(abi.encode(puzzleId, playerMappingSlot));
@@ -54,17 +54,19 @@ contract Puzzle17 is Script {
         vm.label(address(puzzle), "MurderMystery");
         vm.label(address(curta), "Curta");
 
-        uint256 solution = puzzle.solution();
-
         bool solved = curta.hasSolvedPuzzle(player, puzzleId);
-
         if (solved) {
             // pretend the player has not solved the puzzle
             vm.store(address(curta), puzzleMappingSlot, bytes32(uint256(0)));
-            solved = curta.hasSolvedPuzzle(player, puzzleId);
         }
 
-        assert(!solved);
+        (,, uint40 firstSolve) = curta.getPuzzle(puzzleId);
+        if (firstSolve > 0) {
+            // pretend the puzzle is still solvable
+            vm.warp(firstSolve);
+        }
+
+        uint256 solution = puzzle.solution();
 
         vm.startPrank(player);
 
