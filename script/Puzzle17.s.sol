@@ -68,7 +68,11 @@ contract Puzzle17 is Script {
 
         uint256 solution = puzzle.solution();
 
-        vm.startPrank(player);
+        if (solved) {
+            vm.startPrank(player);
+        } else {
+            vm.startBroadcast(player);
+        }
 
         puzzle.solve(
             sand,
@@ -86,6 +90,10 @@ contract Puzzle17 is Script {
 
         curta.solve(puzzleId, solution);
 
-        vm.stopPrank();
+        if (solved) {
+            vm.stopPrank();
+        } else {
+            vm.stopBroadcast();
+        }
     }
 }
