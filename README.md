@@ -1,3 +1,5 @@
+![Screen Shot 2023-09-14 at 7 36 25 PM](https://github.com/yorhodes/curta/assets/3020995/891ac59e-30a0-46dd-aa65-621caf9b9db6)
+
 <img align="right" width="150" height="150" top="100" src="./assets/curta.png">
 
 # Curta
